@@ -2,10 +2,10 @@ homeassistant:
   # Name of the location where Home Assistant is running
   name: Home
   # Location required to calculate the time the sun rises and sets
-  latitude: -33.8591
-  longitude: 151.2002
+  latitude: !secret latitude
+  longitude: !secret longitude
   # Impacts weather/sunrise data (altitude above sea level in meters)
-  elevation: 960
+  elevation: !secret elevation
   # metric for Metric, imperial for Imperial
   unit_system: metric
   # Pick yours from here: http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
@@ -16,22 +16,61 @@ homeassistant:
 # Configure a default setup of Home Assistant (frontend, api, etc)
 default_config:
 
-# Uncomment this if you are using SSL/TLS, running in Docker container, etc.
-# http:
-#   base_url: example.duckdns.org:8123
+person:
 
-# Discover some devices automatically
+config:
+
+map:
+
+# Discover some  devices automatically
 discovery:
 
-# Sensors
-sensor:
-  # Weather prediction
-  - platform: yr
+history:
+
+# logbook:
+
+recorder:
+  #db_url: sqlite:///data/homeassistant/home-assistant.sqlite
+  db_url: !secret mysql_url
+  purge_interval: 1
+  purge_keep_days: 7
+
+zone:
+  - name: Home
+    latitude: !secret latitude
+    longitude: !secret longitude
+    radius: 250
+    icon: mdi:home
 
 # Text to speech
 tts:
   - platform: google_translate
 
 group: !include groups.yaml
-automation: !include automations.yaml
+
+automation: !include_dir_merge_list automation/
+
 script: !include scripts.yaml
+
+switch: !include_dir_merge_list switch/
+
+light: !include_dir_merge_list light/
+
+sensor: !include_dir_merge_list sensor/
+
+media_player: !include_dir_merge_list media_player/
+
+# https://www.home-assistant.io/components/cast/
+cast:
+  media_player:
+    - host: 192.168.1.178
+    - host: 192.168.1.222
+
+# https://www.home-assistant.io/components/roomba/ 
+# TODO get the BLID etc 
+# vacuum:
+#  - platform: roomba
+#    host: !secret roomba_host
+#    username: !secret roomba_blid
+#    password: !secret roomba_password
+
